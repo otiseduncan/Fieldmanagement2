@@ -1,0 +1,22 @@
+﻿{
+  "folders": [
+    {
+      "name": "Backend",
+      "path": "backend"
+    },
+    {
+      "name": "Frontend",
+      "path": "frontend"
+    }
+  ],
+  "settings": {
+    "python.defaultInterpreterPath": "${workspaceFolder:Backend}/.venv/bin/python",
+    "python.testing.pytestArgs": ["backend/tests"],
+    "python.testing.pytestEnabled": true,
+    "editor.formatOnSave": true,
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/.pytest_cache": true
+    }
+  }
+}
