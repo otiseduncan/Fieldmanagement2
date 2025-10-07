@@ -16,6 +16,7 @@ class Client(Base):
     email = Column(String(255), nullable=True)
     phone = Column(String(32), nullable=True)
     address = Column(Text, nullable=True)
-    metadata = Column(JSONB, nullable=False, default=dict)
+    # Use column name 'metadata' but map to attribute 'meta' to avoid SQLAlchemy reserved name
+    meta = Column('metadata', JSONB, nullable=False, default=dict)
 
     jobs = relationship('Job', back_populates='client', cascade='all,delete')

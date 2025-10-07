@@ -2,7 +2,7 @@
 
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.core.security import get_current_active_user
@@ -15,6 +15,7 @@ router = APIRouter()
 
 
 @router.get('/', response_model=List[ClientOut])
+@router.get('', response_model=List[ClientOut])
 async def list_clients(
     db: Session = Depends(get_db),
     _: UserOut = Depends(get_current_active_user),
@@ -23,12 +24,16 @@ async def list_clients(
 
 
 @router.post('/', response_model=ClientOut, status_code=status.HTTP_201_CREATED)
+@router.post('', response_model=ClientOut, status_code=status.HTTP_201_CREATED)
 async def create_client(
     client_in: ClientCreate,
     db: Session = Depends(get_db),
     _: UserOut = Depends(get_current_active_user),
 ) -> ClientOut:
-    client = Client(**client_in.model_dump())
+    data = client_in.model_dump()
+    if 'metadata' in data:
+        data['meta'] = data.pop('metadata')
+    client = Client(**data)
     db.add(client)
     db.commit()
     db.refresh(client)
@@ -58,6 +63,8 @@ async def update_client(
     if client is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Client not found')
     update_data = client_in.model_dump(exclude_unset=True)
+    if 'metadata' in update_data:
+        update_data['meta'] = update_data.pop('metadata')
     for field, value in update_data.items():
         setattr(client, field, value)
     db.add(client)
@@ -66,14 +73,19 @@ async def update_client(
     return client
 
 
-@router.delete('/{client_id}', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    '/{client_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
 async def delete_client(
     client_id: int,
     db: Session = Depends(get_db),
     _: UserOut = Depends(get_current_active_user),
-) -> None:
+) -> Response:
     client = db.get(Client, client_id)
     if client is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Client not found')
     db.delete(client)
     db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

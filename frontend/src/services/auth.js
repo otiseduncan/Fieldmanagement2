@@ -1,7 +1,8 @@
 ﻿import axios from 'axios';
 
 const authClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  // Always use Vite dev server proxy in local/dev
+  baseURL: '/api',
 });
 
 authClient.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';

@@ -1,6 +1,6 @@
-﻿import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { createJob } from '../services/api.js';
+import { createJob, fetchClients } from '../services/api.js';
 
 const defaultRequest = {
   ro_number: '',
@@ -12,6 +12,34 @@ const defaultRequest = {
 function ClientPortal() {
   const [form, setForm] = useState(defaultRequest);
   const [status, setStatus] = useState(null);
+  const [clients, setClients] = useState([]);
+  const [isLoadingClients, setIsLoadingClients] = useState(false);
+  const [clientsError, setClientsError] = useState(null);
+
+  useEffect(() => {
+    let ignore = false;
+    setIsLoadingClients(true);
+    setClientsError(null);
+    fetchClients()
+      .then((data) => {
+        if (!ignore) {
+          setClients(data);
+          if (data?.length && !form.client_id) {
+            setForm((prev) => ({ ...prev, client_id: String(data[0].id) }));
+          }
+        }
+      })
+      .catch((err) => {
+        if (!ignore) setClientsError(err);
+      })
+      .finally(() => {
+        if (!ignore) setIsLoadingClients(false);
+      });
+    return () => {
+      ignore = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -25,6 +53,7 @@ function ClientPortal() {
       setStatus('submitted');
       setForm(defaultRequest);
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error(err);
       setStatus('error');
     }
@@ -63,14 +92,30 @@ function ClientPortal() {
             />
           </label>
           <label className="flex flex-col text-sm">
-            Client ID
-            <input
+            Client
+            <select
               name="client_id"
               value={form.client_id}
               onChange={handleChange}
               required
               className="mt-1 rounded border border-slate-700 bg-slate-950 px-3 py-2 text-white focus:border-brand focus:outline-none"
-            />
+            >
+              {isLoadingClients ? (
+                <option value="" disabled>
+                  Loading clients...
+                </option>
+              ) : null}
+              {!isLoadingClients && clients?.length === 0 ? (
+                <option value="" disabled>
+                  No clients found
+                </option>
+              ) : null}
+              {clients?.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} (ID {c.id})
+                </option>
+              ))}
+            </select>
           </label>
           <label className="flex flex-col text-sm sm:col-span-2">
             Notes
@@ -95,9 +140,13 @@ function ClientPortal() {
         {status === 'error' ? (
           <p className="text-sm text-red-400">Unable to submit. Please retry in a moment.</p>
         ) : null}
+        {clientsError ? (
+          <p className="text-sm text-red-400">Unable to load clients. Refresh and try again.</p>
+        ) : null}
       </form>
     </section>
   );
 }
 
 export default ClientPortal;
+

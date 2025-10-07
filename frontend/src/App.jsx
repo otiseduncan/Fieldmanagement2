@@ -1,6 +1,7 @@
 ﻿import { Route, Routes } from 'react-router-dom';
 
 import Navbar from './components/Navbar.jsx';
+import DebugBar from './components/DebugBar.jsx';
 import AdminPanel from './pages/AdminPanel.jsx';
 import CMRDashboard from './pages/CMRDashboard.jsx';
 import ClientPortal from './pages/ClientPortal.jsx';
@@ -14,6 +15,7 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <Navbar />
+      <DebugBar />
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6">
         <Routes>
           <Route path="/" element={isAuthenticated ? <TechnicianDashboard /> : <Login />} />

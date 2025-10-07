@@ -7,7 +7,7 @@ import { useJobs } from '../context/JobContext.jsx';
 
 function TechnicianDashboard() {
   const { jobs, isLoading } = useJobs();
-  const [filters, setFilters] = useState({ status: 'pending' });
+  const [filters, setFilters] = useState({ status: '' });
   const [selectedJob, setSelectedJob] = useState(null);
 
   const filteredJobs = useMemo(() => {
@@ -56,7 +56,7 @@ function TechnicianDashboard() {
           <h3 className="text-base font-semibold text-white">VIN Intelligence</h3>
           <p>
             Pulls VIN + ADAS metadata to surface calibration requirements before a job begins. Hook into
-            the backend `/api/v1/jobs/{id}` integration to display dynamic content here.
+            the backend <code>/api/v1/jobs/:id</code> integration to display dynamic content here.
           </p>
         </aside>
       </div>

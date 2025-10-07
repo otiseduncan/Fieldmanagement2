@@ -3,6 +3,7 @@
 from typing import Any, Optional
 
 from pydantic import BaseModel, EmailStr, Field
+from pydantic.config import ConfigDict
 
 
 class ClientBase(BaseModel):
@@ -27,7 +28,7 @@ class ClientUpdate(BaseModel):
 
 class ClientOut(ClientBase):
     id: int
-    metadata: dict[str, Any]
+    # Read from ORM attribute 'meta' but serialize as 'metadata'
+    metadata: dict[str, Any] = Field(validation_alias='meta', serialization_alias='metadata')
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

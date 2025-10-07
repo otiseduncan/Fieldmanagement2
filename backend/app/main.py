@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1 import routes_auth, routes_clients, routes_jobs, routes_reports, routes_users
 from app.core.config import settings
+from app.database.init_db import init_db, seed_demo_data
 from app.core.logging_config import configure_logging
 
 configure_logging()
@@ -53,3 +54,15 @@ app.include_router(
 def health_check() -> dict[str, str]:
     """Simple health check used by load balancers and monitoring."""
     return {"status": "ok"}
+
+
+@app.on_event("startup")
+def _startup_seed() -> None:
+    """Initialize DB and auto-seed demo data in local/dev environments."""
+    init_db()
+    if settings.environment.lower() in {"local", "development", "dev"}:
+        try:
+            seed_demo_data(count=12)
+        except Exception:  # best-effort; avoid blocking startup
+            # Seeding failures shouldn't crash local server; rely on manual seed if needed
+            pass

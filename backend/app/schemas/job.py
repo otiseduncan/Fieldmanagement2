@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field
+from pydantic.config import ConfigDict
 
 
 class JobBase(BaseModel):
@@ -33,7 +34,7 @@ class JobOut(JobBase):
     completed_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
-    metadata: dict[str, Any]
+    # Read from ORM attribute 'meta' but serialize as 'metadata'
+    metadata: dict[str, Any] = Field(validation_alias='meta', serialization_alias='metadata')
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

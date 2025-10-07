@@ -9,7 +9,11 @@ from passlib.context import CryptContext
 from app.core.config import settings
 from app.schemas.user import UserInDB, UserOut
 
-pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+# Use PBKDF2 for local/dev auth to avoid bcrypt backend constraints in containers.
+pwd_context = CryptContext(
+    schemes=['pbkdf2_sha256'],
+    deprecated='auto',
+)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/v1/auth/login')
 
 _fake_users_db: Dict[str, Dict[str, Any]] = {
@@ -19,9 +23,39 @@ _fake_users_db: Dict[str, Dict[str, Any]] = {
         'full_name': 'Admin User',
         'roles': ['admin'],
         'is_active': True,
-        'hashed_password': pwd_context.hash('admin123'),
-    }
+        'hashed_password': '',
+    },
+    'tech@example.com': {
+        'id': 2,
+        'email': 'tech@example.com',
+        'full_name': 'Technician User',
+        'roles': ['technician'],
+        'is_active': True,
+        'hashed_password': '',
+    },
+    'cmr@example.com': {
+        'id': 3,
+        'email': 'cmr@example.com',
+        'full_name': 'CMR User',
+        'roles': ['cmr'],
+        'is_active': True,
+        'hashed_password': '',
+    },
+    'client@example.com': {
+        'id': 4,
+        'email': 'client@example.com',
+        'full_name': 'Client User',
+        'roles': ['client'],
+        'is_active': True,
+        'hashed_password': '',
+    },
 }
+
+# Initialize fake users' password hashes at import time
+_fake_users_db['admin@example.com']['hashed_password'] = pwd_context.hash('admin123')
+_fake_users_db['tech@example.com']['hashed_password'] = pwd_context.hash('tech123')
+_fake_users_db['cmr@example.com']['hashed_password'] = pwd_context.hash('cmr123')
+_fake_users_db['client@example.com']['hashed_password'] = pwd_context.hash('client123')
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

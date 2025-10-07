@@ -26,6 +26,8 @@ export function JobProvider({ children }) {
         }
       })
       .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error('Failed to fetch jobs', err);
         if (!ignore) {
           setError(err);
         }
